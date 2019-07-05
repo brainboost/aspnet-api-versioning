@@ -63,8 +63,12 @@
             {
                 if ( !structuralProperties.TryGetValue( property.Name, out var structuralProperty ) )
                 {
-                    clrTypeMatchesEdmType = false;
-                    continue;
+                    var name = GetNameFromAttribute( property );
+                    if ( string.IsNullOrEmpty( name ) || !structuralProperties.TryGetValue( name, out structuralProperty ) )
+                    {
+                        clrTypeMatchesEdmType = false;
+                        continue;
+                    }
                 }
 
                 var structuredTypeRef = structuralProperty.Type;
@@ -321,6 +325,11 @@
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly( name, Run );
 #endif
             return assemblyBuilder.DefineDynamicModule( "<module>" );
+        }
+
+        static string GetNameFromAttribute( PropertyInfo property )
+        {
+            return property.GetCustomAttribute<System.Runtime.Serialization.DataMemberAttribute>()?.Name;
         }
     }
 }
